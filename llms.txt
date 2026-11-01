@@ -1,0 +1,12 @@
+# CatalogIQ (catalogiqhq.com)
+
+CatalogIQ is an e-commerce catalog service operated as a brand of Apex Grid Engineering PLLC. It turns supplier spreadsheets (CSV/XLSX) into polished, store-ready product listings: normalised titles, short and long descriptions, SEO titles and meta descriptions, tags, and category mapping.
+
+Key facts:
+- Fact lock: every factual product attribute (material, dimensions, compatibility, certifications) is taken only from merchant-supplied data. Missing fields are flagged in a completeness report, never invented.
+- Merchant approval: nothing publishes without merchant review and approval. Regulated claims require explicit merchant attestation.
+- Delivery: platform-ready CSV download for any store that imports CSV; direct store-connect publishing for Shopify at pilot.
+- Pricing (pilot): Starter $99/mo (up to 500 SKUs), Growth $199/mo (up to 2,500 SKUs, Shopify connect), Scale $399/mo (up to 10,000 SKUs). Catalog Studio scoped engagements from $999. ShopTranslate add-on: approved listings translated/localised at +$79/mo per language per store.
+- Pilot entry: a free 25-SKU sample pack drafted from the merchant's own supplier sheet.
+- Contact: info@catalogiqhq.com
+- Data: a merchant's catalog data belongs to that merchant, is used only to produce their listings, is never shared with other merchants or used in marketing without written consent, and is exportable in full on cancellation.
