@@ -127,6 +127,10 @@ class DB:
     def _neon(self, sql, params):
         # Neon serverless HTTP: POST https://<host>/sql
         # headers: Neon-Connection-String, Content-Type: application/json
+        # Postgres binds parameters as $1..$n — translate the app's %s style.
+        if "%s" in sql:
+            parts = sql.split("%s")
+            sql = parts[0] + "".join(f"${i}{p}" for i, p in enumerate(parts[1:], 1))
         from urllib.parse import urlparse
         u = urlparse(self.url)
         endpoint = f"https://{u.hostname}/sql"
