@@ -50,6 +50,7 @@ SCHEMA = [
   plan TEXT,
   status TEXT,
   current_period_end TEXT,
+  last_event_created INTEGER NOT NULL DEFAULT 0,
   updated_at TEXT)""",
 """CREATE TABLE IF NOT EXISTS orders(
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -183,3 +184,11 @@ class DB:
             else:
                 self._neon(stmt.replace("INTEGER PRIMARY KEY AUTOINCREMENT",
                                         "SERIAL PRIMARY KEY"), [])
+        # Migration: subscriptions.last_event_created (added 2026-11-15 for
+        # the out-of-order webhook guard). Existing tables predate the
+        # column; a duplicate-column error means it is already there.
+        try:
+            self.exec("ALTER TABLE subscriptions ADD COLUMN "
+                      "last_event_created INTEGER NOT NULL DEFAULT 0")
+        except Exception:
+            pass
