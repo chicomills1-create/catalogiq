@@ -160,16 +160,18 @@ def apply_stripe_event(ev):
                 (obj.get("customer"), ws["id"]))
         sub_id = obj.get("subscription")
         if sub_id:
+            created = int(ev.get("created") or 0)
             existing = db.one("SELECT id FROM subscriptions WHERE "
                               "stripe_subscription_id=%s", (sub_id,))
             if existing:
-                db.exec("UPDATE subscriptions SET status='active', updated_at=%s "
-                        "WHERE id=%s", (A.now_iso(), existing["id"]))
+                db.exec("UPDATE subscriptions SET status='active', updated_at=%s, "
+                        "last_event_created=%s WHERE id=%s",
+                        (A.now_iso(), created, existing["id"]))
             else:
                 db.exec("INSERT INTO subscriptions(workspace_id, stripe_customer_id, "
-                        "stripe_subscription_id, status, updated_at) "
-                        "VALUES(%s,%s,%s,'active',%s)",
-                        (ws["id"], obj.get("customer"), sub_id, A.now_iso()))
+                        "stripe_subscription_id, status, last_event_created, updated_at) "
+                        "VALUES(%s,%s,%s,'active',%s,%s)",
+                        (ws["id"], obj.get("customer"), sub_id, created, A.now_iso()))
             db.exec("UPDATE workspaces SET plan_state='active' WHERE id=%s", (ws["id"],))
     elif etype in ("invoice.paid", "invoice.payment_failed",
                    "customer.subscription.updated", "customer.subscription.deleted"):
@@ -177,10 +179,14 @@ def apply_stripe_event(ev):
         sub = db.one("SELECT * FROM subscriptions WHERE stripe_subscription_id=%s",
                      (sub_id,)) if sub_id else None
         if sub:
+            created = int(ev.get("created") or 0)
+            if created and created < int(sub.get("last_event_created") or 0):
+                return "stale"  # out-of-order delivery: a newer event already applied
             status = obj.get("status") or ("canceled" if etype.endswith("deleted")
                      else "past_due" if etype == "invoice.payment_failed" else "active")
-            db.exec("UPDATE subscriptions SET status=%s, updated_at=%s WHERE id=%s",
-                    (status, A.now_iso(), sub["id"]))
+            db.exec("UPDATE subscriptions SET status=%s, updated_at=%s, "
+                    "last_event_created=%s WHERE id=%s",
+                    (status, A.now_iso(), max(created, int(sub.get("last_event_created") or 0)), sub["id"]))
             state = {"active": "active", "past_due": "past_due",
                      "canceled": "canceled", "unpaid": "past_due"}.get(status)
             if state:
