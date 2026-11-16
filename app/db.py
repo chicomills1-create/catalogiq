@@ -137,7 +137,11 @@ class DB:
         with urllib.request.urlopen(req, timeout=30) as r:
             data = json.loads(r.read().decode())
         cols = [f["name"] for f in data.get("fields", [])]
-        return [dict(zip(cols, row)) for row in data.get("rows", [])]
+        out = []
+        for row in data.get("rows", []):
+            # Neon /sql may return rows as objects or as value arrays.
+            out.append(row if isinstance(row, dict) else dict(zip(cols, row)))
+        return out
 
     # --- unified interface --------------------------------------------------
     def q(self, sql, params=()):
